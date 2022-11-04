@@ -69,19 +69,20 @@
   (->> (fetch-head)
        (re-find #"^[^\s]*")))
 
-(defn append-github [text]
+(defn append-github-url
+  "두가지 경우
+  a58d83947d3d1e77f887871d6d450fdb962740d2 branch 'main' of https://github.com/jacegem/vscode-user
+  57a946b3db9e513e0cdbbb105d998ed7e7df8889 branch 'develop' of github.com:jacegem/light-poly "
+  [text]
   (if (str/includes? text "//github.com/")
     (str "https:" text)
     (str "https://github.com/" text)))
 
 (defn host-url
-  "두가지 경우
-  a58d83947d3d1e77f887871d6d450fdb962740d2 branch 'main' of https://github.com/jacegem/vscode-user
-  57a946b3db9e513e0cdbbb105d998ed7e7df8889 branch 'develop' of github.com:jacegem/light-poly "
   []
   (->> (fetch-head)
        (re-find #"[^:]*$")
-       append-github))
+       append-github-url))
 
 (comment
   (host-url)
