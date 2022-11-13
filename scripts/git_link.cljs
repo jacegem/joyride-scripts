@@ -89,12 +89,6 @@
            (str "https://github.com/"))
       url)))
 
-(comment
-  (host-url)
-  (ref-sha)
-  (current-branch-ref)
-  :rcf)
-
 (defn git-link []
   (let [host  (host-url)
         sha   (ref-sha)
