@@ -83,11 +83,18 @@
                      (filter #(re-find #"url = \w+" %))
                      first
                      (re-find  #"\S+$"))]
-    (if (str/ends-with? url ".git")
-      (->> (re-find #".*:(.*)\.git" url)
-           second
-           (str "https://github.com/"))
-      url)))
+
+    (str "https://github.com/"
+         (-> url
+             (str/replace #"\.git$" "")
+             (str/replace #"^git@github.com:" "")
+             (str/replace #"^https://github.com/" "")))))
+
+(comment
+  (host-url)
+  (str/replace "XX" #"^." "")
+
+  :rcf)
 
 (defn git-link []
   (let [host  (host-url)
