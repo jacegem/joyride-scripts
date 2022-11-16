@@ -90,12 +90,6 @@
              (str/replace #"^git@github.com:" "")
              (str/replace #"^https://github.com/" "")))))
 
-(comment
-  (host-url)
-  (str/replace "XX" #"^." "")
-
-  :rcf)
-
 (defn git-link []
   (let [host  (host-url)
         sha   (ref-sha)
