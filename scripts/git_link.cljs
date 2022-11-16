@@ -52,46 +52,47 @@
         branch       (re-find #"[^/]*$" head-content)]
     branch))
 
-(defn fetch-head []
-  (let [branch (current-branch)
-        heads  (-> (path/join vscode/workspace.rootPath ".git" "FETCH_HEAD")
-                   fs/readFileSync
-                   (.toString "utf-8")
-                   trim-newline
-                   split-lines)]
-    (->> heads
-         (filter #(re-find (re-pattern (str "'" branch "'")) %))
-         first)))
+(defn current-branch-ref []
+  (let [head-content (-> (path/join vscode/workspace.rootPath
+                                    ".git" "HEAD")
+                         fs/readFileSync
+                         (.toString "utf-8")
+                         trim-newline)
+        ref          (re-find #"\S*$" head-content)]
+    ref))
 
-(defn branch-sha
-  "현 브랜치의 sha 반환"
-  []
-  (->> (fetch-head)
-       (re-find #"^[^\s]*")))
-
-(defn append-github [text]
-  (if (str/includes? text "//github.com/")
-    (str "https:" text)
-    (str "https://github.com/" text)))
+(defn ref-sha []
+  (let [ref (current-branch-ref)
+        sha (-> (path/join vscode/workspace.rootPath
+                           ".git" ref)
+                fs/readFileSync
+                (.toString "utf-8")
+                trim-newline)]
+    sha))
 
 (defn host-url
-  "두가지 경우
-  a58d83947d3d1e77f887871d6d450fdb962740d2 branch 'main' of https://github.com/jacegem/vscode-user
-  57a946b3db9e513e0cdbbb105d998ed7e7df8889 branch 'develop' of github.com:jacegem/light-poly "
+  "git@github.com:jacegem/joyride-scripts.git
+   https://github.com/jacegem/log.git"
   []
-  (->> (fetch-head)
-       (re-find #"[^:]*$")
-       append-github))
+  (let [configs (-> (path/join vscode/workspace.rootPath ".git" "config")
+                    fs/readFileSync
+                    (.toString "utf-8")
+                    trim-newline
+                    split-lines)
+        url     (->> configs
+                     (filter #(re-find #"url = \w+" %))
+                     first
+                     (re-find  #"\S+$"))]
 
-(comment
-  (host-url)
-  (str/replace "ABC" #"A" "X")
-  (str/includes? "ABC" "A")
-  #_{})
+    (str "https://github.com/"
+         (-> url
+             (str/replace #"\.git$" "")
+             (str/replace #"^git@github.com:" "")
+             (str/replace #"^https://github.com/" "")))))
 
 (defn git-link []
   (let [host  (host-url)
-        sha   (branch-sha)
+        sha   (ref-sha)
         path  (file-path)
         lines (line-number)]
     (str host "/blob/" sha path "#L" (inc (first lines)) "#L" (inc (second lines)))))
@@ -102,7 +103,7 @@
 (comment
   (git-link)
   (host-url)
-  (branch-sha)
+  (ref-sha)
   (file-path)
   "https://github.com/jacegem/light-poly/blob/7b40329f459d8e2dc00ed2273d4b790b30cbe575/.joyride/scripts/git_link.cljs#L39"
   "https://github.com/jacegem/light-poly/blob/7b40329f459d8e2dc00ed2273d4b790b30cbe575/.joyride/scripts/git_link.cljs#L77#L77"
