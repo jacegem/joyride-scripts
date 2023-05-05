@@ -48,8 +48,6 @@
 ;;; user_activate.cljs skeleton
 
 ;; Keep tally on VS Code disposables we register
-
-
 (defonce !db (atom {:disposables []}))
 
 ;; To make the activation script re-runnable we dispose of
@@ -127,3 +125,4 @@
 (comment
   (js-keys (second (:disposables @!db)))
   :rcf)
+
